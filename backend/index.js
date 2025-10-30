@@ -18,87 +18,75 @@ app.use((req, res, next) => {
 // Ruta de prueba
 app.get('/', (req, res) => {
   res.json({ 
-    message: 'Bienvenido al backend de Conectando Mundos',
+    message: 'Backend - Conectando Mundos (Mexico)',
     api: 'UCDP (Uppsala Conflict Data Program)',
     info: 'API publica, no requiere autenticacion',
+    pais: 'Mexico',
     endpoints: {
-      '/api/ucdp/events': 'GET - Obtener eventos georeferenciados recientes',
-      '/api/ucdp/country/:country': 'GET - Eventos por país y año (requiere ?year=XXXX)',
-      '/api/ucdp/conflicts': 'GET - Conflictos activos',
-      '/api/ucdp/test': 'GET - Prueba con México 2023'
+      '/api/mexico/eventos': 'GET - Todos los eventos en México (?year=XXXX opcional)',
+      '/api/mexico/recientes': 'GET - Eventos recientes (últimos 5 años)',
+      '/api/mexico/rango': 'GET - Eventos por rango de años (?startYear=XXXX&endYear=XXXX)'
     }
   });
 });
 
-// Ruta para obtener eventos recientes
-app.get('/api/ucdp/events', async (req, res) => {
+// Ruta para obtener eventos de México
+app.get('/api/mexico/eventos', async (req, res) => {
   try {
-    const pagesize = req.query.pagesize || 100;
+    const year = req.query.year ? parseInt(req.query.year) : null;
+    const maxResults = req.query.limit ? parseInt(req.query.limit) : 1000;
     
-    const result = await ucdpService.getRecentEvents(pagesize);
+    const result = await ucdpService.getMexicoEvents(year, maxResults);
     res.json(result);
   } catch (error) {
     res.status(500).json({ 
       success: false, 
-      error: 'Error al obtener eventos de UCDP',
+      error: 'Error al obtener eventos de México',
       details: error.message 
     });
   }
 });
 
-// Ruta para obtener eventos por país y año
-app.get('/api/ucdp/country/:country', async (req, res) => {
+// Ruta para obtener eventos recientes de México
+app.get('/api/mexico/recientes', async (req, res) => {
   try {
-    const { country } = req.params;
-    const { year, pagesize } = req.query;
+    const maxResults = req.query.limit ? parseInt(req.query.limit) : 1000;
     
-    if (!year) {
+    const result = await ucdpService.getRecentMexicoEvents(maxResults);
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({ 
+      success: false, 
+      error: 'Error al obtener eventos recientes',
+      details: error.message 
+    });
+  }
+});
+
+// Ruta para obtener eventos por rango de años
+app.get('/api/mexico/rango', async (req, res) => {
+  try {
+    const { startYear, endYear } = req.query;
+    const maxResults = req.query.limit ? parseInt(req.query.limit) : 1000;
+    
+    if (!startYear || !endYear) {
       return res.status(400).json({ 
         success: false, 
-        error: 'Se requiere el parámetro "year"',
-        example: '/api/ucdp/country/Mexico?year=2023'
+        error: 'Se requieren los parámetros startYear y endYear',
+        example: '/api/mexico/rango?startYear=2020&endYear=2023'
       });
     }
 
-    const result = await ucdpService.getEventsByCountryAndYear(
-      country, 
-      parseInt(year), 
-      pagesize ? parseInt(pagesize) : 1000
+    const result = await ucdpService.getMexicoEventsByYearRange(
+      parseInt(startYear), 
+      parseInt(endYear),
+      maxResults
     );
     res.json(result);
   } catch (error) {
     res.status(500).json({ 
       success: false, 
-      error: 'Error al obtener eventos por país',
-      details: error.message 
-    });
-  }
-});
-
-// Ruta para obtener conflictos activos
-app.get('/api/ucdp/conflicts', async (req, res) => {
-  try {
-    const params = req.query;
-    const result = await ucdpService.getConflicts(params);
-    res.json(result);
-  } catch (error) {
-    res.status(500).json({ 
-      success: false, 
-      error: 'Error al obtener conflictos',
-      details: error.message 
-    });
-  }
-});
-
-// Ruta de prueba con México
-app.get('/api/ucdp/test', async (req, res) => {
-  try {
-    const result = await ucdpService.testMexicoColombia();
-    res.json(result);
-  } catch (error) {
-    res.status(500).json({ 
-      success: false, 
-      error: 'Error en test',
+      error: 'Error al obtener eventos por rango',
       details: error.message 
     });
   }
@@ -107,5 +95,5 @@ app.get('/api/ucdp/test', async (req, res) => {
 // Iniciar servidor
 app.listen(PORT, () => {
   console.log(`Servidor corriendo en http://localhost:${PORT}`);
-  console.log(`UCDP API integrada - Sin autenticacion requerida`);
+  console.log(`UCDP API - Datos de conflictos en Mexico`);
 });
