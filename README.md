@@ -1,4 +1,4 @@
-# Proyecto: Conectando Mundo
+# Proyecto: Territorio Fragmentados
 
 Visualización interactiva de eventos de conflicto en México utilizando datos del Uppsala Conflict Data Program (UCDP).
 
