@@ -1,4 +1,4 @@
-# Proyecto: Territorio Fragmentados
+# Proyecto: Territorios Fragmentados
 
 Visualización interactiva de eventos de conflicto en México utilizando datos del Uppsala Conflict Data Program (UCDP).
 
